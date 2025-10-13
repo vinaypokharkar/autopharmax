@@ -19,7 +19,7 @@ class ModelService:
     
     def _load_models(self):
         """Load trained model, scaler, and metadata"""
-        model_dir = "C:\\Users\\vinay\\OneDrive\\Desktop\\hackathon\\autopharma\\trained_models"
+        model_dir = "/app/trained_models"
         
         try:
             # Load best model

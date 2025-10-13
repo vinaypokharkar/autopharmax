@@ -18,7 +18,7 @@ class DataService:
     
     def _load_data(self):
         """Load original data from CSV file"""
-        data_path = "C:\\Users\\vinay\\OneDrive\\Desktop\\hackathon\\autopharma\\dataset\\merged_data.csv"
+        data_path = "/app/dataset/merged_data.csv"
         
         try:
             self._original_data = pd.read_csv(data_path)
