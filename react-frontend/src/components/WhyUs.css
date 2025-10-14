@@ -1,0 +1,46 @@
+.why-us {
+    padding: 4rem 2rem;
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+}
+
+.why-us h2 {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background-color: #111;
+}
+
+.feature-number {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #cba135;
+}
+
+.feature-content h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #cba135;
+}
+
+.feature-content p {
+    font-size: 1rem;
+    color: #aaa;
+}

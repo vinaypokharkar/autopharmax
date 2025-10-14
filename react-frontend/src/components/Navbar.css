@@ -1,0 +1,32 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Helvetica', sans-serif;
+}
+
+.navbar-left,
+.navbar-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.navbar-center {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    color: #cba135;
+    text-decoration: none;
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+}
