@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.predict import router as predict_router
+from routes.chat import router as chat_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -26,6 +27,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(predict_router, prefix="/api/v1", tags=["Prediction"])
+app.include_router(chat_router, prefix="/api/v1", tags=["Chat"])
 
 # Root endpoint
 @app.get("/")

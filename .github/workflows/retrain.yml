@@ -1,0 +1,67 @@
+name: Continuous Training
+
+on:
+  push:
+    paths:
+      - "dataset/**" # Trigger only when dataset changes
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  train-and-report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy scikit-learn xgboost dvc
+
+      # ========================================================
+      # STEP 1: PULL DATA (REQUIRES REMOTE SETUP)
+      # For this demo, we assume dataset might be checked in or
+      # we would use 'dvc pull' here if a remote was configured.
+      # ========================================================
+      # - name: Pull Data with DVC
+      #   env:
+      #     GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+      #   run: dvc pull
+
+      - name: Train Model
+        run: |
+          cd backend
+          python train.py
+
+      - name: Generate Report
+        run: |
+          echo "## Model Training Report" >> report.md
+          cat backend/metrics.txt >> report.md
+
+          # Add visual comparison (if valid)
+          # python backend/generate_scatter_plot.py 
+          # echo "![Scatter Plot](./backend/xgboost_predicted_vs_actual.png)" >> report.md
+
+          # Publish report to PR comment (using CML or just GH script)
+          # For simplicity, we just cat it to step summary
+          cat report.md >> $GITHUB_STEP_SUMMARY
+
+      # ========================================================
+      # STEP 2: COMMIT NEW MODEL (Make sure to use LFS/DVC)
+      # pushing large .pkl files to git is bad practice, but
+      # for a hackathon demo, this works to show "updated weights".
+      # ========================================================
+      - name: Commit Updated Model
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          git add backend/trained_models/*.pkl
+          git commit -m "Update model weights [skip ci]"
+          git push

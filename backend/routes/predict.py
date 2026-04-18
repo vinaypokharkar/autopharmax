@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
-from typing import Optional
+from typing import Optional, Dict
 from services.model_service import ModelService
 from services.data_service import DataService
 
@@ -25,6 +25,7 @@ class PredictionResponse(BaseModel):
     actual_ln_ic50: Optional[float] = None
     actual_ic50: Optional[float] = None
     absolute_error: Optional[float] = None
+    shap_values: Optional[Dict[str, float]] = None
     model_name: str
     training_date: str
     num_features: int
@@ -92,10 +93,30 @@ async def predict_ic50(request: PredictionRequest):
         ln_ic50_pred = model.predict(X_scaled)[0]
         ic50_pred = np.exp(ln_ic50_pred)  # Convert from log scale
         
+        # Calculate SHAP values
+        try:
+            explainer = model_service.get_explainer()
+            shap_output = explainer.shap_values(X_scaled)
+            
+            # If multi-dimensional, take the first sample's SHAP values
+            # (In TreeExplainer for regression, it's usually a single array)
+            if isinstance(shap_output, list):
+                shap_contribs = shap_output[0].flatten()
+            else:
+                shap_contribs = shap_output.flatten()
+            
+            # Map features to their SHAP values
+            feature_names = metadata['feature_columns']
+            shap_dict = {name: float(val) for name, val in zip(feature_names, shap_contribs)}
+        except Exception as e:
+            print(f"SHAP calculation failed: {e}")
+            shap_dict = None
+
         # Prepare response
         response_data = {
             "predicted_ln_ic50": float(ln_ic50_pred),
             "predicted_ic50": float(ic50_pred),
+            "shap_values": shap_dict,
             "model_name": metadata['best_model_name'],
             "training_date": metadata['training_date'],
             "num_features": len(metadata['feature_columns'])

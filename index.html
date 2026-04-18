@@ -9,11 +9,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#e0f2fe',
+                primaryTextColor: '#075985',
+                primaryBorderColor: '#0ea5e9',
+                lineColor: '#64748b',
+                secondaryColor: '#f0fdf4',
+                tertiaryColor: '#fff7ed',
+                fontFamily: 'Inter'
+            }
+        });
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f9ff; /*-sky-50*/
-            color: #334155; /*-slate-700*/
+            background-color: #f0f9ff;
+            color: #334155;
         }
         .card {
             background-color: white;
@@ -36,11 +52,8 @@
         .best-model-glow {
             box-shadow: 0 0 15px rgba(20, 184, 166, 0.5);
         }
-        .tab-button {
-            transition: all 0.3s ease;
-        }
         .tab-button.active {
-            background-color: #0d9488; /*-teal-600*/
+            background-color: #0d9488;
             color: white;
         }
         .accordion-content {
@@ -51,41 +64,80 @@
         .accordion-button.open .accordion-icon {
             transform: rotate(180deg);
         }
-        th {
-            cursor: pointer;
-        }
-        .sort-icon {
-            opacity: 0.5;
-            transition: opacity 0.2s ease;
-        }
-        th:hover .sort-icon {
-            opacity: 1;
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background-color: white;
         }
     </style>
 </head>
 <body class="p-4 sm:p-6 md:p-8">
 
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
         <header class="text-center mb-10">
             <h1 class="text-4xl md:text-5xl font-bold text-sky-800 mb-2">💊 AutoPharma</h1>
             <p class="text-lg md:text-xl text-slate-600">Drug Response Prediction System</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
             <div class="lg:col-span-2 space-y-8">
-                <!-- Project Overview -->
+                
                 <section id="overview" class="card">
                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-chart-pie mr-3"></i>Project Overview</h2>
                     <ul class="space-y-2 text-slate-600 list-disc list-inside">
                         <li><strong class="font-semibold">Goal:</strong> Predict cancer drug response (IC50 values) using machine learning.</li>
-                        <li><strong class="font-semibold">Target Variable:</strong> LN(IC50) - Natural logarithm of the drug concentration needed to inhibit 50% of cell growth.</li>
-                        <li><strong class="font-semibold">Application:</strong> To provide personalized cancer treatment recommendations.</li>
+                        <li><strong class="font-semibold">Target Variable:</strong> LN(IC50) - Natural logarithm of concentration for 50% inhibition.</li>
+                        <li><strong class="font-semibold">Application:</strong> Personalized cancer treatment recommendations.</li>
                     </ul>
                 </section>
 
-                <!-- Model Performance -->
+                <section id="architecture" class="card">
+                    <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center">
+                        <i class="fas fa-sitemap mr-3"></i>System Architecture & Flow
+                    </h2>
+                    <div class="overflow-x-auto py-4">
+                        <pre class="mermaid">
+flowchart TD
+    User([User])
+    Frontend[Frontend UI Streamlit]
+
+    subgraph Backend_API [FastAPI Backend]
+        API_Predict[POST /predict]
+        API_Chat[POST /chat]
+        DataSvc[DataService]
+        ModelSvc[ModelService]
+        ChatSvc[ChatService]
+        Model[[XGBoost Model]]
+        Explainer[[SHAP Explainer]]
+    end
+
+    subgraph External_Services [External Services]
+        LLM[Google Gemini AI]
+    end
+
+    User -->|1. Selects Cell Line & Drug| Frontend
+    User -->|2. Clicks Predict| Frontend
+    Frontend -->|3. Request Prediction| API_Predict
+    API_Predict -->|4. Get Features| DataSvc
+    API_Predict -->|5. Get Model| ModelSvc
+    ModelSvc -->|Predict| Model
+    Model -->|Result| API_Predict
+    API_Predict -->|6. Calculate Importance| Explainer
+    Explainer -->|SHAP Values| API_Predict
+    API_Predict -->|7. Return JSON| Frontend
+    Frontend -->|8. Display Results| User
+
+    User -->|9. Ask Dr. AI| Frontend
+    Frontend -->|10. Query + Context| API_Chat
+    API_Chat -->|11. Process Request| ChatSvc
+    ChatSvc -->|12. Prompt + Context| LLM
+    LLM -->|13. Return Explanation| ChatSvc
+    ChatSvc -->|14. Return Response| API_Chat
+    API_Chat -->|15. Display Answer| Frontend
+                        </pre>
+                    </div>
+                </section>
+
                 <section id="performance" class="card">
                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-tachometer-alt mr-3"></i>Model Performance Results</h2>
                     <div class="overflow-x-auto">
@@ -101,116 +153,55 @@
                             </thead>
                             <tbody>
                                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                                    <td class="p-3">Linear Regression</td>
-                                    <td class="p-3">0.6343</td>
-                                    <td class="p-3">1.7203</td>
-                                    <td class="p-3">0.7965</td>
-                                    <td class="p-3"><span class="tag bg-gray-200 text-gray-800">Baseline</span></td>
-                                </tr>
-                                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                                    <td class="p-3">ElasticNet</td>
-                                    <td class="p-3">0.6321</td>
-                                    <td class="p-3">1.7255</td>
-                                    <td class="p-3">0.7963</td>
-                                    <td class="p-3"><span class="tag bg-blue-100 text-blue-800">Regularized</span></td>
-                                </tr>
-                                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                                    <td class="p-3">Random Forest</td>
-                                    <td class="p-3">0.9335</td>
-                                    <td class="p-3">0.7336</td>
-                                    <td class="p-3">0.9664</td>
-                                    <td class="p-3"><span class="tag bg-green-100 text-green-800">Good</span></td>
-                                </tr>
-                                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                                    <td class="p-3">Random Forest (Tuned)</td>
-                                    <td class="p-3">0.9807</td>
-                                    <td class="p-3">0.3950</td>
-                                    <td class="p-3">0.9904</td>
-                                    <td class="p-3"><span class="tag bg-emerald-100 text-emerald-800">Excellent</span></td>
+                                    <td class="p-3">Linear Regression</td><td class="p-3">0.6343</td><td class="p-3">1.7203</td><td class="p-3">0.7965</td><td class="p-3"><span class="tag bg-gray-200 text-gray-800">Baseline</span></td>
                                 </tr>
                                 <tr class="border-b border-teal-200 bg-teal-50 hover:bg-teal-100 best-model-glow">
-                                    <td class="p-3 font-bold text-teal-800">🏆 XGBoost (Tuned)</td>
-                                    <td class="p-3 font-bold text-teal-800">0.9922</td>
-                                    <td class="p-3 font-bold text-teal-800">0.2512</td>
-                                    <td class="p-3 font-bold text-teal-800">0.9962</td>
-                                    <td class="p-3"><span class="tag bg-teal-500 text-white shadow">Best</span></td>
+                                    <td class="p-3 font-bold text-teal-800">🏆 XGBoost (Tuned)</td><td class="p-3 font-bold text-teal-800">0.9922</td><td class="p-3 font-bold text-teal-800">0.2512</td><td class="p-3 font-bold text-teal-800">0.9962</td><td class="p-3"><span class="tag bg-teal-500 text-white shadow">Best</span></td>
                                 </tr>
                                 <tr class="hover:bg-slate-50">
-                                    <td class="p-3">ANN</td>
-                                    <td class="p-3">0.7686</td>
-                                    <td class="p-3">1.3684</td>
-                                    <td class="p-3">0.8773</td>
-                                    <td class="p-3"><span class="tag bg-purple-100 text-purple-800">Deep Learning</span></td>
+                                    <td class="p-3">ANN</td><td class="p-3">0.7686</td><td class="p-3">1.3684</td><td class="p-3">0.8773</td><td class="p-3"><span class="tag bg-purple-100 text-purple-800">Deep Learning</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </section>
 
-                <!-- ML Algorithms -->
-                <section id="algorithms" class="card">
-                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-robot mr-3"></i>Machine Learning Algorithms</h2>
-                     <div class="mb-4 flex border border-slate-200 rounded-lg p-1">
-                         <button class="tab-button flex-1 p-2 rounded-md active" data-tab="traditional">Traditional ML</button>
-                         <button class="tab-button flex-1 p-2 rounded-md" data-tab="deep-learning">Deep Learning</button>
-                     </div>
-                     <div id="traditional" class="tab-content grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Content injected by JS -->
-                     </div>
-                      <div id="deep-learning" class="tab-content hidden">
-                        <!-- Content injected by JS -->
-                     </div>
-                </section>
-
-                <!-- Technical Implementation -->
                 <section id="implementation" class="card">
                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-cogs mr-3"></i>Technical Implementation</h2>
                     <div class="space-y-2" id="accordion-container">
-                       <!-- Accordions injected by JS -->
-                    </div>
+                        </div>
                 </section>
             </div>
 
-            <!-- Right Column -->
             <div class="space-y-8">
-                <!-- Key Insights -->
-                 <section id="insights" class="card bg-sky-700 text-white">
+                <section id="insights" class="card bg-sky-700 text-white">
                     <h2 class="text-2xl font-bold text-white mb-4 flex items-center"><i class="fas fa-lightbulb mr-3"></i>Key Insights</h2>
                     <ul class="space-y-3">
                         <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">1</span><span><strong>Best Model:</strong> XGBoost (Tuned) with a 99.22% R² score.</span></li>
-                        <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">2</span><span><strong>High Accuracy:</strong> Achieved 99.62% Pearson correlation with actual values.</span></li>
-                        <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">3</span><span><strong>Low Error:</strong> Impressive RMSE of only 0.2512 on the test set.</span></li>
-                        <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">4</span><span><strong>Production Ready:</strong> Deployed as a Streamlit app for real-world use cases.</span></li>
-                        <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">5</span><span><strong>End-to-End:</strong> Comprehensive pipeline from data merging to deployment.</span></li>
+                        <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">2</span><span><strong>Explainable AI:</strong> Uses SHAP for local interpretability.</span></li>
+                        <li class="flex items-start"><span class="bg-white text-sky-700 rounded-full w-6 h-6 text-center font-bold mr-3 flex-shrink-0">3</span><span><strong>AI Chat:</strong> Gemini-powered clinical insights.</span></li>
                     </ul>
                 </section>
 
-                <!-- Business Impact -->
                 <section id="impact" class="card">
                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-briefcase mr-3"></i>Business Impact</h2>
                      <ul class="space-y-2 text-slate-600 list-disc list-inside">
-                        <li><strong>Personalized Medicine:</strong> Predict drug effectiveness for specific cancer types.</li>
-                        <li><strong>Cost Reduction:</strong> Help avoid the use of ineffective treatments.</li>
-                        <li><strong>Research Acceleration:</strong> Aid in drug discovery and development phases.</li>
-                        <li><strong>Clinical Decision Support:</strong> Assist oncologists in making treatment plans.</li>
+                        <li><strong>Personalized Medicine:</strong> Match drugs to specific cancer genotypes.</li>
+                        <li><strong>Cost Reduction:</strong> Eliminate trial-and-error in treatments.</li>
+                        <li><strong>Research:</strong> Speed up drug repurposing studies.</li>
                     </ul>
                 </section>
 
-                <!-- Datasets -->
                 <section id="datasets" class="card">
-                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-database mr-3"></i>Datasets Used</h2>
+                     <h2 class="text-2xl font-bold text-sky-700 mb-4 flex items-center"><i class="fas fa-database mr-3"></i>Datasets</h2>
                      <div class="space-y-4">
                         <div>
-                           <h3 class="font-semibold text-slate-800">1. GDSC Dataset (35MB)</h3>
-                           <p class="text-sm text-slate-500">Genomics of Drug Sensitivity in Cancer database.</p>
+                           <h3 class="font-semibold text-slate-800">1. GDSC Dataset</h3>
+                           <p class="text-sm text-slate-500">Genomics of Drug Sensitivity in Cancer.</p>
                         </div>
                          <div>
-                           <h3 class="font-semibold text-slate-800">2. Cell Lines Details (115KB)</h3>
-                           <p class="text-sm text-slate-500">Cancer cell line metadata with tissue and cancer types.</p>
-                        </div>
-                         <div>
-                           <h3 class="font-semibold text-slate-800">3. Merged Dataset (37MB)</h3>
-                           <p class="text-sm text-slate-500">Combined data with 166,644 samples (5 numerical, 26 categorical features).</p>
+                           <h3 class="font-semibold text-slate-800">2. Merged Data</h3>
+                           <p class="text-sm text-slate-500">166,644 samples with 31 features.</p>
                         </div>
                      </div>
                 </section>
@@ -220,86 +211,43 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- Data for dynamic content ---
-        const traditionalModels = [
-            { name: "Linear Regression", r2: "0.6343", rmse: "1.7203", tag: "Baseline" },
-            { name: "ElasticNet", r2: "0.6321", rmse: "1.7255", tag: "Regularized" },
-            { name: "Random Forest", r2: "0.9335", rmse: "0.7336", tag: "Ensemble" },
-            { name: "XGBoost", r2: "0.9437", rmse: "0.6748", tag: "Boosting" }
-        ];
-
-        const deepLearningModel = {
-            name: "Artificial Neural Network (ANN)",
-            r2: "0.7686",
-            rmse: "1.3684",
-            architecture: "Multi-layer perceptron with TensorFlow/Keras"
-        };
-        
         const implementationDetails = [
             { 
                 title: "Data Preprocessing", 
                 icon: "fa-filter",
                 content: [
-                    "<strong>Stratified Split:</strong> 60% train, 20% validation, 20% test",
-                    "<strong>Feature Engineering:</strong> StandardScaler for numerical features",
-                    "<strong>Dimensionality Reduction:</strong> PCA (95% variance retention)",
-                    "<strong>Categorical Encoding:</strong> One-hot encoding for categorical variables"
+                    "<strong>Stratified Split:</strong> 60/20/20 for Train/Val/Test",
+                    "<strong>Scaling:</strong> StandardScaler applied to features",
+                    "<strong>Reduction:</strong> PCA (95% variance retention)",
+                    "<strong>Encoding:</strong> One-hot encoding for cell/drug IDs"
                 ] 
             },
             {
-                title: "Hyperparameter Tuning",
-                icon: "fa-sliders-h",
+                title: "Explainability (SHAP)",
+                icon: "fa-brain",
                 content: [
-                    "<strong>Random Forest:</strong> 200 estimators, no max_depth, min_samples_split=5",
-                    "<strong>XGBoost:</strong> 200 estimators, max_depth=9, learning_rate=0.1, subsample=1.0"
+                    "<strong>Local Interpretability:</strong> Explains individual predictions",
+                    "<strong>Feature Attribution:</strong> Identifies which genes affect IC50 most",
+                    "<strong>Trust:</strong> Vital for medical/clinical acceptance"
                 ]
             },
             {
-                title: "Model Deployment",
+                title: "Deployment Stack",
                 icon: "fa-rocket",
                 content: [
-                    "<strong>Streamlit Web App:</strong> Built using <code>app.py</code>",
-                    "<strong>Interactive UI:</strong> Select cancer cell line and drug",
-                    "<strong>Real-time Predictions:</strong> Outputs IC50 values in µM",
-                    "<strong>Model Persistence:</strong> Pickle files used for production models"
+                    "<strong>Frontend:</strong> Streamlit for interactive UI",
+                    "<strong>Backend:</strong> FastAPI for scalable inference",
+                    "<strong>AI:</strong> Google Gemini for natural language results"
                 ]
             }
         ];
-
-
-        // --- Populate dynamic content ---
-        const traditionalContainer = document.getElementById('traditional');
-        traditionalModels.forEach(model => {
-            traditionalContainer.innerHTML += `
-                <div class="border border-slate-200 rounded-lg p-4">
-                    <h3 class="font-semibold text-slate-800">${model.name}</h3>
-                    <p class="text-sm text-slate-500">${model.tag}</p>
-                    <div class="mt-2 text-xs flex justify-between">
-                        <span>R²: <strong>${model.r2}</strong></span>
-                        <span>RMSE: <strong>${model.rmse}</strong></span>
-                    </div>
-                </div>
-            `;
-        });
-        
-        const deepLearningContainer = document.getElementById('deep-learning');
-        deepLearningContainer.innerHTML = `
-            <div class="border border-slate-200 rounded-lg p-4">
-                <h3 class="font-semibold text-slate-800">${deepLearningModel.name}</h3>
-                <p class="text-sm text-slate-500">${deepLearningModel.architecture}</p>
-                <div class="mt-2 text-xs flex justify-between">
-                    <span>R²: <strong>${deepLearningModel.r2}</strong></span>
-                    <span>RMSE: <strong>${deepLearningModel.rmse}</strong></span>
-                </div>
-            </div>
-        `;
 
         const accordionContainer = document.getElementById('accordion-container');
         implementationDetails.forEach(item => {
             accordionContainer.innerHTML += `
                 <div class="border border-slate-200 rounded-lg">
                     <h2>
-                        <button type="button" class="accordion-button flex items-center justify-between w-full p-4 font-semibold text-left text-slate-800" aria-expanded="false">
+                        <button type="button" class="accordion-button flex items-center justify-between w-full p-4 font-semibold text-left text-slate-800">
                             <span class="flex items-center"><i class="fas ${item.icon} mr-3 text-sky-600"></i>${item.title}</span>
                             <i class="fas fa-chevron-down accordion-icon transition-transform duration-300"></i>
                         </button>
@@ -315,81 +263,14 @@
             `;
         });
 
-
-        // --- Interactivity ---
-
-        // Tabs
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-
-                tabContents.forEach(content => {
-                    if (content.id === button.dataset.tab) {
-                        content.classList.remove('hidden');
-                    } else {
-                        content.classList.add('hidden');
-                    }
-                });
-            });
-        });
-        
-        // Accordion
+        // Accordion Logic
         document.querySelectorAll('.accordion-button').forEach(button => {
             button.addEventListener('click', () => {
                 const accordionContent = button.parentElement.nextElementSibling;
                 button.classList.toggle('open');
-                
-                if (button.classList.contains('open')) {
-                    accordionContent.style.maxHeight = accordionContent.scrollHeight + "px";
-                    button.setAttribute('aria-expanded', 'true');
-                } else {
-                    accordionContent.style.maxHeight = 0;
-                     button.setAttribute('aria-expanded', 'false');
-                }
+                accordionContent.style.maxHeight = button.classList.contains('open') ? accordionContent.scrollHeight + "px" : 0;
             });
         });
-        
-        // Table Sorting
-        const table = document.getElementById('performance-table');
-        const headers = table.querySelectorAll('th[data-column]');
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-        let sortDirections = Array.from(headers).map(() => 'asc');
-        
-        headers.forEach((header, index) => {
-            header.addEventListener('click', () => {
-                const column = header.getAttribute('data-column');
-                const direction = sortDirections[index] === 'asc' ? 'desc' : 'asc';
-                sortDirections[index] = direction;
-                
-                // Update icons
-                headers.forEach(h => h.querySelector('.sort-icon').className = 'sort-icon');
-                header.querySelector('.sort-icon').className = `sort-icon fas fa-sort-${direction === 'asc' ? 'up' : 'down'}`;
-
-                rows.sort((a, b) => {
-                    const aVal = a.cells[column].textContent.trim();
-                    const bVal = b.cells[column].textContent.trim();
-
-                    const aNum = parseFloat(aVal.replace(/[^0-9.-]+/g,""));
-                    const bNum = parseFloat(bVal.replace(/[^0-9.-]+/g,""));
-
-                    if (!isNaN(aNum) && !isNaN(bNum)) {
-                        return direction === 'asc' ? aNum - bNum : bNum - aNum;
-                    }
-
-                    return direction === 'asc' 
-                        ? aVal.localeCompare(bVal, undefined, {numeric: true}) 
-                        : bVal.localeCompare(aVal, undefined, {numeric: true});
-                });
-                
-                tbody.append(...rows);
-            });
-        });
-
     });
 </script>
 

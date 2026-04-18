@@ -1,5 +1,6 @@
 import pickle
 import os
+import shap
 from typing import Optional
 
 class ModelService:
@@ -10,6 +11,7 @@ class ModelService:
     _model = None
     _scaler = None
     _metadata = None
+    _explainer = None
     
     def __new__(cls):
         if cls._instance is None:
@@ -18,8 +20,12 @@ class ModelService:
         return cls._instance
     
     def _load_models(self):
-        """Load trained model, scaler, and metadata"""
-        model_dir = "/app/trained_models"
+        """Load trained model, scaler, metadata, and init SHAP explainer"""
+        # ... existing loading code ...
+        # Use absolute path relative to this file
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        model_dir = os.path.join(base_dir, "models")
+
         
         try:
             # Load best model
@@ -37,7 +43,10 @@ class ModelService:
             with open(metadata_path, 'rb') as f:
                 self._metadata = pickle.load(f)
             
-            print("✅ Models loaded successfully")
+            # Initialize SHAP explainer
+            self._explainer = shap.TreeExplainer(self._model)
+            
+            print("✅ Models and SHAP explainer loaded successfully")
         except Exception as e:
             print(f"❌ Error loading models: {e}")
             print(f"Model directory: {model_dir}")
@@ -64,3 +73,9 @@ class ModelService:
         if self._metadata is None:
             raise ValueError("Metadata not loaded")
         return self._metadata
+
+    def get_explainer(self):
+        """Get the SHAP explainer"""
+        if self._explainer is None:
+            raise ValueError("SHAP explainer not initialized")
+        return self._explainer

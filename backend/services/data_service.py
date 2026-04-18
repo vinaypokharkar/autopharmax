@@ -18,7 +18,11 @@ class DataService:
     
     def _load_data(self):
         """Load original data from CSV file"""
-        data_path = "/app/dataset/merged_data.csv"
+        # Use absolute path relative to this file to be robust
+        import os
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        data_path = os.path.join(base_dir, "data", "processed", "merged_data.csv")
+
         
         try:
             self._original_data = pd.read_csv(data_path)
