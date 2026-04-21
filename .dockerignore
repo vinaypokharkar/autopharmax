@@ -1,29 +1,40 @@
-# Git
+# VCS / Docker meta
 .git
 .gitignore
-
-# Docker
 .dockerignore
-Dockerfile
+.dvc/cache
+.dvc/tmp
 
 # Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+**/__pycache__/
+*.py[cod]
+*.so
 .Python
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.eggs/
-.egg-info/
-dist/
-build/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
 
-# Node
-node_modules/
-npm-debug.log
-yarn-error.log
+# ML heavy artefacts we never want in an image
+.wheels/
+mlruns/
+mlflow.db
+predictions.db
+drift_alert.json
+drift_report_*.json
 
-# Other
+# Keep processed artefacts OUT of the image - we bind-mount them at runtime
+data/raw/ccle_*.csv
+data/raw/drugcomb.csv
+data/processed/
+
+# Legacy bundle - huge and unused
+legacy/
+
+# Scratch
+*.log
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/

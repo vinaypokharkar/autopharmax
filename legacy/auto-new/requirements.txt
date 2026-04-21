@@ -1,0 +1,14 @@
+pandas
+numpy
+scikit-learn
+xgboost
+fastapi
+uvicorn
+pydantic
+pytest
+click
+python-multipart
+requests
+openpyxl
+mlflow
+dvc

@@ -1,0 +1,8 @@
+# DVC should ignore anything Python or IDE
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/

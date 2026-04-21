@@ -1,16 +1,57 @@
-trained_models/
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 **/.venv/
 **/venv/
 **/env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
 
-**/__pycache__/
-**/venv/
-**/env/
+# Environment
+.env
+.env.local
 
-**/__pycache__/
-**/venv/
-**/env/
+# ML artifacts
+mlruns/
+mlflow.db
+predictions.db
+data/raw/
+data/processed/
+!data/processed/.gitkeep
+*.pkl
+*.pt
+*.ckpt
+metrics.json
+drift_alert.json
+drift_report_*.json
 
-**/__pycache__/
-**/venv/
-**/env/
+# DVC
+/.dvc/cache
+/.dvc/tmp
+/.dvc/plots
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Legacy (kept in repo, but ignore nested caches)
+legacy/**/__pycache__/
+legacy/**/mlruns/
+legacy/**/*.pkl
+legacy/**/*.pt
+
+# Local-only bundles / scratch
+.wheels/
+AutoPharaX (1)/
+bash.exe.stackdump
+*.stackdump
+WhatsApp Image*.jpeg
+WhatsApp Image*.jpg

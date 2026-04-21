@@ -1,0 +1,71 @@
+stages:
+  ingest:
+    cmd: python src/pipeline/stage1_ingest.py --skip-depmap --skip-drugcomb
+    deps:
+      - src/pipeline/stage1_ingest.py
+      - src/data/download.py
+      - src/data/validate.py
+    outs:
+      - data/raw/:
+          persist: true
+
+  features:
+    cmd: python src/pipeline/stage2_features.py
+    deps:
+      - data/raw/
+      - src/pipeline/stage2_features.py
+      - src/features/cell_features.py
+      - src/features/drug_features.py
+    params:
+      - data
+    outs:
+      - data/processed/cell_features.pkl
+      - data/processed/drug_features.pkl
+      - data/processed/cell_scaler.pkl
+      - data/processed/drug_desc_scaler.pkl
+      - data/processed/feature_metadata.json
+      - data/processed/merged_single.parquet
+      - data/processed/merged_synergy.parquet
+      - data/processed/splits/
+      - data/processed/stage2_summary.json
+
+  train:
+    cmd: python src/pipeline/stage3_train.py
+    deps:
+      - data/processed/cell_features.pkl
+      - data/processed/drug_features.pkl
+      - data/processed/merged_single.parquet
+      - data/processed/merged_synergy.parquet
+      - data/processed/splits/
+      - src/pipeline/stage3_train.py
+      - src/models/
+      - src/training/trainer.py
+      - src/training/datasets.py
+    params:
+      - training
+      - model
+    outs:
+      - data/processed/best_checkpoint.pt
+
+  evaluate:
+    cmd: python src/pipeline/stage4_evaluate.py
+    deps:
+      - data/processed/best_checkpoint.pt
+      - src/pipeline/stage4_evaluate.py
+      - src/training/validation.py
+    params:
+      - quality_gate
+    outs:
+      - data/processed/eval/
+    metrics:
+      - metrics.json:
+          cache: false
+
+  register:
+    cmd: python src/pipeline/stage5_register.py
+    deps:
+      - data/processed/best_checkpoint.pt
+      - metrics.json
+      - src/pipeline/stage5_register.py
+    params:
+      - quality_gate

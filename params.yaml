@@ -1,0 +1,33 @@
+# AutoPharmaX — single source of truth for all hyperparameters.
+# Every script reads from here. Never hardcode a hyperparameter elsewhere.
+
+data:
+  landmark_genes: 978           # L1000 landmark gene count
+  top_mutation_genes: 200       # top-N most mutated genes (binary + CNV channels)
+  morgan_radius: 2
+  morgan_bits: 2048
+  rdkit_desc_count: 200         # approx; real count after NaN-column drop is ~180-200
+  test_size: 0.10
+  val_size: 0.10
+
+training:
+  batch_size: 512
+  max_epochs: 200
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  dropout: 0.3
+  early_stopping_patience: 15
+  grad_clip_norm: 1.0
+  synergy_lambda: 0.5           # joint loss weight on synergy head
+
+model:
+  cell_hidden: [1024, 512, 256]
+  drug_hidden: [1024, 512, 256]
+  single_head: [512, 256, 64, 1]
+  synergy_head: [768, 256, 64, 1]
+
+quality_gate:
+  min_ldo_r2: 0.55              # leave-drug-out R2 must exceed this to hit Production
+
+monitoring:
+  drift_threshold: 0.10         # per-feature KS p-value threshold

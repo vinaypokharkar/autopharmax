@@ -1,23 +1,70 @@
-
-version: '3.8'
+name: autopharmax
 
 services:
-  backend:
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.22.0
+    container_name: autopharmax-mlflow
+    command: >
+      mlflow server
+        --host 0.0.0.0 --port 5000
+        --backend-store-uri sqlite:////mlflow/mlflow.db
+        --default-artifact-root /mlflow/artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/artifacts
+      - mlflow_db:/mlflow
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/').read()"]
+      interval: 20s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+
+  api:
     build:
-      context: ./backend
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: autopharmax-api
     ports:
       - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      TZ: UTC
     volumes:
-      - ./backend:/app
-      - ./trained_models:/app/trained_models
-      - ./dataset:/app/dataset
+      # Trained model + feature caches + scalers + metrics (read-only):
+      - ./data/processed:/app/data/processed:ro
+      # Cell-line tissue map + SMILES cache (read-only):
+      - ./data/raw:/app/data/raw:ro
+      # SQLite audit log grows here (read-write):
+      - ./predictions.db:/app/predictions.db
+    depends_on:
+      mlflow:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 20s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
 
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: autopharmax-frontend
     ports:
       - "8501:8501"
+    environment:
+      API_BASE_URL: http://api:8000
     volumes:
-      - ./frontend:/app
+      # The model-performance page loads scatter PNGs from here:
+      - ./data/processed:/app/data/processed:ro
     depends_on:
-      - backend
+      api:
+        condition: service_healthy
+
+volumes:
+  mlflow_db:

@@ -1,0 +1,51 @@
+schema: '2.0'
+stages:
+  merge:
+    cmd: python src/data/merge.py
+    deps:
+    - path: data/raw/Cell_Lines_Details.xlsx
+      hash: md5
+      md5: d3cf88d70b03ea2d7bb9cac9ad0ec689
+      size: 117316
+    - path: data/raw/GDSC2-dataset.csv
+      hash: md5
+      md5: 50fc14a9a394bb095eacc824bad99266
+      size: 36297980
+    - path: src/data/merge.py
+      hash: md5
+      md5: eb10b1d0ba7c4fde89da10cabbb1fec2
+      size: 2661
+    outs:
+    - path: data/processed/merged_data.csv
+      hash: md5
+      md5: 5dae8da4c8da03b293d9502399fb8301
+      size: 40568834
+  train:
+    cmd: python src/models/train.py
+    deps:
+    - path: data/processed/merged_data.csv
+      hash: md5
+      md5: 5dae8da4c8da03b293d9502399fb8301
+      size: 40568834
+    - path: src/models/train.py
+      hash: md5
+      md5: 85dc51224ca224958bfa28ea5c77ba20
+      size: 7052
+    params:
+      params.yaml:
+        train.colsample_bytree: 1.0
+        train.learning_rate: 0.1
+        train.max_depth: 9
+        train.model_type: random_forest
+        train.n_estimators: 200
+        train.random_state: 42
+        train.subsample: 1.0
+    outs:
+    - path: models/best_model_XGBoost_(Tuned).pkl
+      hash: md5
+      md5: 57ede7941363d12a7e9bfbac2e27556d
+      size: 14685527
+    - path: models/scaler.pkl
+      hash: md5
+      md5: db651fa28418d6a1998a502deb90f8c7
+      size: 900

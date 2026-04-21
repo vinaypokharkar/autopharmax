@@ -1,0 +1,50 @@
+name: ML Training Pipeline
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/**"
+      - "params.yaml"
+      - "dvc.yaml"
+      - "requirements.txt"
+  schedule:
+    - cron: "0 0 * * 0" # Weekly run (Sunday midnight)
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  train-and-evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Python
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # 3. Install Dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Using standard DVC since no remote is used
+          pip install dvc
+
+      # 4. Run Reproducible Pipeline
+      # Note: Since no remote is configured, this assumes data is checked in
+      # OR generated dynamically. If data is missing, this step will fail.
+      - name: Run DVC Pipeline
+        run: dvc repro
+
+      # 5. Archive MLflow Runs
+      - name: Archive MLflow runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-runs
+          path: mlruns/
